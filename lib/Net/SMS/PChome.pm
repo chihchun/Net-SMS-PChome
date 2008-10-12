@@ -5,8 +5,9 @@ use Carp;
 use WWW::Mechanize;
 use HTML::TagParser;
 use Date::Calc qw(check_date check_time Today_and_Now This_Year);
+use LWP::Debug qw(+);
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 our (@ISA) = qw(Exporter);
 our (@EXPORT) = qw(send_sms);
 
@@ -159,26 +160,31 @@ sub smsSend {
    # Should be ok now, right? Let's send it!
    # Login
    $self->{"_ua"}->agent_alias('Windows IE 6');
-   $self->{"_ua"}->get($self->baseurl);
-   $self->{"_ua"}->form_number(1);
-   $self->{"_ua"}->field('fuid', $parms->{username});
-   $self->{"_ua"}->field('pwd', $parms->{password});
-   $self->{"_ua"}->submit();
-   
-   # Input SMS_Message, Recipients
-   $self->{"_ua"}->form_number(2);
-   $self->{"_ua"}->field('InputMsg', $parms->{message});
-   # $self->{"_ua"}->field('mobiles', $parms->{recipients});
-   $self->{"_ua"}->field('firstClick', '1');
-   foreach (1..scalar(@{$self->{"_recipients"}})) {
-       my $field = sprintf("mobile%.2d", $_);
-       $self->{"_ua"}->field($field, @{$parms->{recipients}}[$_-1]);
+   $self->{"_ua"}->post("https://login.pchome.com.tw/adm/person_sell.htm", 
+       [
+       mbrid => $parms->{username} . "\@pchome.com.tw",
+       mbrpass => $parms->{password},
+       chan => 'sms',
+       ltype => 'checklogin',
+       buyflag => "",
+       ]);
+
+   if($self->{"_ua"}->content() != "OK")
+   {
+       die($self->{"_ua"}->content());
    }
-   $self->{"_ua"}->field('sendType', $parms->{sendType});
- 
-   # $self->{"_ua"}->field('longCount', scalar(@{$self->{"_recipients"}}));
-   $self->{"_ua"}->field('encodeType', $parms->{encodeType});
-   $self->{"_ua"}->field('payType', "PChomeTCC");
+
+   $self->{"_ua"}->get($self->baseurl);
+
+   # Input SMS_Message, Recipients
+   $self->{"_ua"}->form_number(1);
+   $self->{"_ua"}->current_form()->action('http://sms.pchome.com.tw/check_msg.htm');
+   $self->{"_ua"}->field('msg_body', $parms->{message});
+   foreach (1..scalar(@{$self->{"_recipients"}})) {
+       $self->{"_ua"}->field("mobile_phone[]", @{$parms->{recipients}}[$_-1], $_);
+   }
+   $self->{"_ua"}->field('send_type', $parms->{sendType});
+   $self->{"_ua"}->field('encoding_type', $parms->{encodeType});
 
    if($self->smsType eq '2') {
    	$self->{"_ua"}->select('year', ($parms->{year} - This_Year()));
@@ -188,9 +194,10 @@ sub smsSend {
    	$self->{"_ua"}->select('minute', $parms->{minute});
    }
    $self->{"_ua"}->submit();
+
    # Input Authcode	
    $self->{"_ua"}->field('auth_code', $parms->{authcode});
-   $self->{"_ua"}->current_form()->action('https://ezpay.pchome.com.tw/auth_form_do');
+   $self->{"_ua"}->current_form()->action('https://ezpay.pchome.com.tw/auth_access.htm');
    $self->{"_ua"}->submit();
 
    if($self->{"_ua"}->success()) {
@@ -228,7 +235,7 @@ sub _init {
    # Set/override defaults
    my %options = (
       ua                => $ua,
-      baseurl           => 'http://sms.pchome.com.tw/front_end/sms', # 'http://sms.pchome.com.tw/jsp/smslong.jsp',
+      baseurl           => 'http://sms.pchome.com.tw/index.htm',
       username          => undef,	#	帳號
       password          => undef,	#	密碼
       authcode		=> undef,	#       Auth Code
@@ -308,6 +315,7 @@ or, if you like one liners:
 
   perl -MNet::SMS::PChome -e 'send_sms("pchome_username", "pchome_password", "auth_code", "recipient", "messages text")'
 
+  If you like to send Chinese messages, the encoding of message text must be in UTF-8.
 
 =head1 DESCRIPTION
 
@@ -443,10 +451,12 @@ You can find information about PChome SMS Service at :
 =head1 AUTHOR
 
 Tsung-Han Yeh, E<lt>snowfly@yuntech.edu.twE<gt>
+Rex Tsai, E<lt>chihchun@kalug.linux.org.tw<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2006 by Tsung-Han Yeh
+Copyright (C) 2008 by Rex Tsai <chihchun@kalug.linux.org.tw>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
