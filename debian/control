@@ -1,0 +1,13 @@
+Source: libnet-sms-pchome-perl
+Section: perl
+Priority: optional
+Build-Depends: debhelper (>= 5.0.0)
+Build-Depends-Indep: perl (>= 5.8.8-7)
+Maintainer: Rex Tsai <chihchun@debian.org.tw>
+Standards-Version: 3.7.3
+
+Package: libnet-sms-pchome-perl
+Architecture: all
+Depends: ${perl:Depends}, ${misc:Depends}, libdate-calc-perl (>= 5.4), libwww-mechanize-perl (>= 1.18), libcrypt-ssleay-perl (>= 0.51)
+Description:  Send SMS messages via the sms.pchome.com.tw service
+ Net::SMS::PChome allows sending SMS messages via http://sms.pchome.com.tw/

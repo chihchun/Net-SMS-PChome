@@ -1,0 +1,14 @@
+This is the debian package for the Net-SMS-PChome module.
+It was created by Rex Tsai <chihchun@debian.org.tw> using dh-make-perl.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself, either Perl version 5.8.8 or, at
+your option, any later version of Perl 5 you may have available.
+
+On Debian systems, the complete text of the GNU General Public License
+and Artistic License can be found in `/usr/share/common-licenses/'.
+
+Copyright (c) 2006 Tsung-Han Yeh, <snowfly@yuntech.edu.tw>.
+    
+The upstream author is:
+Tsung-Han Yeh, <snowfly@yuntech.edu.tw>.

@@ -1,0 +1,11 @@
+libnet-sms-pchome-perl (0.12-1) unstable; urgency=low
+
+  * Fixed for the new html forms.
+
+ -- Rex Tsai <chihchun@debian.org.tw>  Thu, 02 Aug 2007 23:51:42 +0800
+
+libnet-sms-pchome-perl (0.11-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Rex Tsai <chihchun@debian.org.tw>  Tue, 31 Jul 2007 23:15:52 +0800
